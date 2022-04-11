@@ -1,5 +1,4 @@
 ---
-
 - name: Install required packages
   apt:
     name:
@@ -28,7 +27,13 @@
     update_cache: yes
   register: k8s_install
 
-- name: Disable swap
-  shell: |
-    swapoff -a
-  when: k8s_install is changed
+- name: Disable swap forever
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+    backup: yes
+
+- name: Disable swap for curent session
+  command: swapoff -a
+  become: true
